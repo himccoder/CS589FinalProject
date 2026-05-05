@@ -1,3 +1,4 @@
+from encodings.punycode import digits
 from typing import List
 import matplotlib.pyplot as plt
 from neural_net import NeuralNetwork
@@ -11,7 +12,9 @@ def test_model(
         nn_layers: List[int], 
         alpha: float, 
         lambda_: float, 
-        epochs: int, 
+        epochs: int,
+        binary: bool, 
+        label_encoding: bool,
         batch_size: int, 
         _label: str = "label",
         _X: np.ndarray = None, 
@@ -19,7 +22,7 @@ def test_model(
     '''
     layers does not need to include the input layer size
     '''
-    k_fold_instance = k_fold.k_fold(k)
+    k_fold_instance = k_fold.k_fold(k, label_encoding, binary)
 
     if dataset == None or dataset == "Digits":
         k_fold_instance.import_data(X=_X, y=_y)
@@ -37,11 +40,15 @@ def test_model(
 
     print(f'Network Architecture: {nn_layers}')
 
-    nn = NeuralNetwork(layers=nn_layers, alpha=alpha, lambda_=lambda_)
-    nn.train(X_train, y_train.reshape(-1, 1), epochs=epochs, batch_size=batch_size)
+    nn = NeuralNetwork(layers=nn_layers, binary=binary, alpha=alpha, lambda_=lambda_)
+    y_arg = y_train.reshape(-1, 1) if binary else y_train
+    nn.train(X_train, y_arg, epochs=epochs, batch_size=batch_size)
 
     print("Metrics on test set for fold 1:")
-    metrics = nn.get_metrics(X_test, y_test.reshape(-1, 1))
+    if binary:
+        metrics = nn.get_metrics(X_test, y_test.reshape(-1, 1))
+    else:
+        metrics = nn.get_metrics(X_test, y_test)
 
     print()
     for metric, value in metrics.items():
@@ -57,11 +64,15 @@ def test_model(
 
         X_train, X_test, y_train, y_test, _ = k_fold_instance.k_fold_split(fold_index=fold_idx)
 
-        nn = NeuralNetwork(layers=nn_layers, alpha=alpha, lambda_=lambda_)
-        nn.train(X_train, y_train.reshape(-1, 1), epochs=epochs, batch_size=batch_size)
+        nn = NeuralNetwork(layers=nn_layers, binary=binary, alpha=alpha, lambda_=lambda_)
+        y_arg = y_train.reshape(-1, 1) if binary else y_train
+        nn.train(X_train, y_arg, epochs=epochs, batch_size=batch_size)
 
         print(f"Metrics on test set for fold {fold_idx + 1}:")
-        metrics = nn.get_metrics(X_test, y_test.reshape(-1, 1))
+        if binary:
+            metrics = nn.get_metrics(X_test, y_test.reshape(-1, 1))
+        else:
+            metrics = nn.get_metrics(X_test, y_test)
 
         print()
         for metric, value in metrics.items():
@@ -108,15 +119,82 @@ if __name__ == "__main__":
     # test a specific model on a specified dataset, only need to provide name of the dataset
     # don't need to provide input dimension in the nn_layers argument, it will be automatically prepended based on the dataset used
     
-    # test_model(k=10, dataset="parkinsons", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64, _label="Diagnosis")
-    # test_model(k=10, dataset="credit_approval", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64)
-    # test_model(k=10, dataset="rice", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64)
+    # # test on the parkinsons dataset
+    # test_model(
+    #     k=10, 
+    #     dataset="parkinsons", 
+    #     nn_layers=[4, 1], 
+    #     alpha=0.1,
+    #     lambda_=0,
+    #     epochs=50,
+    #     binary=True,
+    #     label_encoding=False,
+    #     batch_size=64,
+    #     _label="Diagnosis"
+    #     )
+    
+    # # test on the credit approval dataset
+    # test_model(
+    #     k=10, 
+    #     dataset="credit_approval", 
+    #     nn_layers=[4, 1], 
+    #     alpha=0.1,
+    #     lambda_=0,
+    #     epochs=50,
+    #     binary=True,
+    #     label_encoding=False,
+    #     batch_size=64
+    #     )
+
+    # # test on the rice dataset
+    # test_model(
+    #     k=10, 
+    #     dataset="rice", 
+    #     nn_layers=[4, 1], 
+    #     alpha=0.1,
+    #     lambda_=0,
+    #     epochs=50,
+    #     binary=True,
+    #     label_encoding=True,
+    #     batch_size=64
+    #     )
+
 
     # test with sklearn's digit dataset
-    digits = datasets.load_digits()
-    test_model(k=10, dataset=None, nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64, _X=digits.data, _y=digits.target)
+    digits = datasets.load_digits(return_X_y=True)
+    # one hot encode the target variable
+    y_one_hot = np.eye(10)[digits[1]]
+    test_model(
+        k=10, 
+        dataset=None, 
+        nn_layers=[10, 10, 10], 
+        alpha=0.1, 
+        lambda_=0, 
+        epochs=50,
+        binary = False, 
+        label_encoding=False, 
+        batch_size=64, 
+        _X=digits[0], 
+        _y=y_one_hot)
+
+    # # # test with sklearn's cover type dataset
+    # cov_type = datasets.fetch_covtype(return_X_y=True)
+    # # # one hot encode the target variable
+    # # y_one_hot = np.eye(7)[cov_type[1]]
+    # print(f"{cov_type[1][0]}")
+    # # test_model(
+    # #     k=10, 
+    # #     dataset=None, 
+    # #     nn_layers=[10, 7], 
+    # #     alpha=0.1, 
+    # #     lambda_=0, 
+    # #     epochs=50,
+    # #     binary = False, 
+    # #     label_encoding=False, 
+    # #     batch_size=64, 
+    # #     _X=cov_type[0], 
+    # #     _y=y_one_hot)
 
     # --------------------------------------
 
     # Plot learning curves for a specific model
-    # plot_learning_curves(k=5, dataset="wdbc", nn_layers=[6, 6, 1], alpha=0.1, lambda_=0.25, epochs=500, batch_size=64)

@@ -7,8 +7,10 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 
 class k_fold:
     
-    def __init__(self, k: int):
+    def __init__(self, k: int, label_encoding: bool, binary: bool):
         self.k = k
+        self.label_encoding = label_encoding
+        self.binary = binary
         self.X = None
         self.df = None
         self.y = None
@@ -22,17 +24,18 @@ class k_fold:
         self.y = self.df[target_col]
 
         # one hot encode the target variable
-        self.label_encoder = LabelEncoder()
-        self.label_encoder.fit(self.y)
+        if self.label_encoding:
+            self.label_encoder = LabelEncoder()
+            self.label_encoder.fit(self.y)
 
     def import_data(self, X: np.ndarray, y: np.ndarray):
         # turn into pandas
         self.X = pd.DataFrame(X) 
-        self.y = pd.Series(y) 
+        self.y = pd.DataFrame(y)
 
-        # one hot encode the target variable
-        self.label_encoder = LabelEncoder()
-        self.label_encoder.fit(self.y)
+        if self.label_encoding:
+            self.label_encoder = LabelEncoder()
+            self.label_encoder.fit(self.y)
 
     def k_fold_split(self, fold_index: Optional[int] = None):
         # one hot encode before splitting to avoid fold variation
@@ -51,24 +54,45 @@ class k_fold:
             ], axis=1)
 
         # encode the label if it's not already encoded
-        y = self.label_encoder.transform(self.y)
+        if self.label_encoding:
+            y = self.label_encoder.transform(self.y)
+        else:
+            y = self.y.values # make sure it's a numpy array
 
         # stratified split the data into k folds, only split the data into folds if it hasn't been done already
         if self.folds is None:
-            class_0_idx = np.where(y == 0)[0]
-            class_1_idx = np.where(y == 1)[0]
 
-            np.random.shuffle(class_0_idx)
-            np.random.shuffle(class_1_idx)
+            # check if the problem is binary or multi-class
+            if self.binary:
+                class_0_idx = np.where(y == 0)[0]
+                class_1_idx = np.where(y == 1)[0]
 
-            class0_folds = np.array_split(class_0_idx, self.k)
-            class1_folds = np.array_split(class_1_idx, self.k)
+                np.random.shuffle(class_0_idx)
+                np.random.shuffle(class_1_idx)
 
-            self.folds = []
-            for i in range(self.k):
-                fold_idx = np.concatenate([class0_folds[i], class1_folds[i]])
-                np.random.shuffle(fold_idx)
-                self.folds.append(fold_idx)
+                class0_folds = np.array_split(class_0_idx, self.k)
+                class1_folds = np.array_split(class_1_idx, self.k)
+
+                self.folds = []
+                for i in range(self.k):
+                    fold_idx = np.concatenate([class0_folds[i], class1_folds[i]])
+                    np.random.shuffle(fold_idx)
+                    self.folds.append(fold_idx)
+            else:
+                # y should come in one-hot encoded format
+                classes = np.unique(y)
+                class_folds = []
+                for c in classes:
+                    c_idx = np.where(y == c)[0]
+                    np.random.shuffle(c_idx)
+                    c_folds = np.array_split(c_idx, self.k)
+                    class_folds.append(c_folds)
+
+                self.folds = []
+                for i in range(self.k):
+                    fold_idx = np.concatenate([class_folds[j][i] for j in range(len(classes))])
+                    np.random.shuffle(fold_idx)
+                    self.folds.append(fold_idx)
 
         # grab test and training indices for the specified fold
         test_idx = self.folds[fold_index]
@@ -88,7 +112,7 @@ class k_fold:
         # return numpy arrays instead of pandas dataframes/series for easier indexing during training
         X_train = X_train.values
         X_test = X_test.values
-        # y is already an array from label encoding
+        # y should already be a numpy array
 
         # return input layer dimension as well for easier neural network initialization
         return X_train, X_test, y_train, y_test, X_train.shape[1]

@@ -3,10 +3,11 @@ import numpy as np
 
 class NeuralNetwork:
 
-    def __init__(self, layers: List[int], alpha: float = 0.5, lambda_: float = 0.0, loss_threshold: float = 1e-8):
+    def __init__(self, layers: List[int], binary: bool, alpha: float = 0.5, lambda_: float = 0.0, loss_threshold: float = 1e-8):
         # layers is a list of integers where each integer represents the number of neurons in that layer
         self.layers = layers
         self.weights = []
+        self.binary = binary
         self.alpha = alpha
         self.lambda_ = lambda_
         self.loss_threshold = loss_threshold
@@ -19,10 +20,16 @@ class NeuralNetwork:
     def sigmoid(self, z):
         return 1 / (1 + np.exp(-z))
         
-    def forward(self, X: List[float], layer: int) -> List[float]:
+    def softmax(self, z):
+        e = np.exp(z - np.max(z))  # subtract max for numerical stability
+        return e / e.sum()
+
+    def forward(self, X, layer):
         weight = self.weights[layer]
         z = np.dot(weight, X)
-        self.activation = self.sigmoid(z)
+        # Use softmax on output layer for multiclass, sigmoid otherwise
+        is_output = (layer == len(self.layers) - 2)
+        self.activation = self.softmax(z) if (is_output and not self.binary) else self.sigmoid(z)
         return self.activation
     
     def forward_pass(self, input_data: List[List[float]]) -> List[float]:
@@ -115,19 +122,19 @@ class NeuralNetwork:
             self.weights[k] -= self.alpha * D[k]
 
 
-    def compute_loss(self, y_pred: List[float], y_true: List[float]) -> float:
-        y_pred = np.array(y_pred)
-        y_true = np.array(y_true) 
-        m = len(y_true)
-        # clip predictions to avoid log(0)
+    def compute_loss(self, y_pred, y_true):
         y_pred = np.clip(y_pred, 1e-12, 1 - 1e-12)
-        
-        J = -1/m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        m = len(y_true)
+
+        if self.binary:
+            J = -1/m * np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+        else:
+            J = -1/m * np.sum(y_true * np.log(y_pred))  # categorical cross-entropy
 
         reg_penalty = 0.0
         if self.lambda_ > 0:
             for W in self.weights:
-                reg_penalty += np.sum(W[:, 1:] ** 2)  # skip bias column (col 0)
+                reg_penalty += np.sum(W[:, 1:] ** 2)
             reg_penalty *= self.lambda_ / (2 * m)
 
         return J + reg_penalty
@@ -200,24 +207,37 @@ class NeuralNetwork:
         '''
 
         # implement thresholding at 0.5 for binary classification
-        y_pred = (y_pred >= 0.5).astype(int)
+        if self.binary:
+            y_pred = (y_pred >= 0.5).astype(int)
 
-        accuracy = np.mean(np.array(y_pred) == np.array(y_true))
-    
-        tp = np.sum((np.array(y_pred) == 1) & (np.array(y_true) == 1))
-        fp = np.sum((np.array(y_pred) == 1) & (np.array(y_true) == 0))
-        fn = np.sum((np.array(y_pred) == 0) & (np.array(y_true) == 1))
+            accuracy = np.mean(np.array(y_pred) == np.array(y_true))
+        
+            tp = np.sum((np.array(y_pred) == 1) & (np.array(y_true) == 1))
+            fp = np.sum((np.array(y_pred) == 1) & (np.array(y_true) == 0))
+            fn = np.sum((np.array(y_pred) == 0) & (np.array(y_true) == 1))
 
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+            f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-        return {
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1_score
-        }
+            return {
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1_score
+            }
+        else:
+            # take the largest value as the predicted class
+            y_pred = np.argmax(y_pred, axis=1)
+            y_true = np.argmax(y_true, axis=1)
+            # print(F"Predicted classes: {y_pred}")
+
+            accuracy = np.mean(np.array(y_pred) == np.array(y_true))
+
+            return {
+                "accuracy": accuracy,
+            }
+
 
     def get_weights(self):
         return self.weights

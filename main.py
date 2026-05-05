@@ -3,13 +3,28 @@ import matplotlib.pyplot as plt
 from neural_net import NeuralNetwork
 import numpy as np
 import k_fold
+from sklearn import datasets
 
-def test_model(k: int, dataset: str, nn_layers: List[int], alpha: float, lambda_: float, epochs: int, batch_size: int, _label: str = "label"):
+def test_model(
+        k: int, 
+        dataset: str, 
+        nn_layers: List[int], 
+        alpha: float, 
+        lambda_: float, 
+        epochs: int, 
+        batch_size: int, 
+        _label: str = "label",
+        _X: np.ndarray = None, 
+        _y: np.ndarray = None):
     '''
     layers does not need to include the input layer size
     '''
     k_fold_instance = k_fold.k_fold(k)
-    k_fold_instance.load_data(csv_path=f"./supporting_files/{dataset}.csv", target_col=_label)
+
+    if dataset == None or dataset == "Digits":
+        k_fold_instance.import_data(X=_X, y=_y)
+    else:
+        k_fold_instance.load_data(csv_path=f"./supporting_files/{dataset}.csv", target_col=_label)
 
     accuracies = []
     F1_scores = []
@@ -37,8 +52,6 @@ def test_model(k: int, dataset: str, nn_layers: List[int], alpha: float, lambda_
 
         print(f"{metric.capitalize()}: {value:.4f}")
     print()
-
-    # print(f'layers: {nn_layers}, alpha: {alpha}, lambda: {lambda_}, epochs: {epochs}, batch_size: {batch_size}\n')
 
     for fold_idx in range(1, k_fold_instance.get_k()):
 
@@ -92,19 +105,16 @@ if __name__ == "__main__":
 
     # Test different network architectures and regularization parameters 
 
-    # Network Architectures to test:
-    # 1. [input_dim, 4, 1]
-    # 2. [input_dim, 6, 6, 1]
-    # 3. [input_dim, 8, 4, 1]
-    # 4. [input_dim, 8, 4, 2, 1]
-    # 5. [input_dim, 16, 8, 8, 16, 1]
-
-    # regularization parameters to test: 0, 0.25, 0.5
-
     # test a specific model on a specified dataset, only need to provide name of the dataset
     # don't need to provide input dimension in the nn_layers argument, it will be automatically prepended based on the dataset used
-    # test_model(k=5, dataset="parkinsons", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64, _label="Diagnosis")
-    test_model(k=5, dataset="rice", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64)
+    
+    # test_model(k=10, dataset="parkinsons", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64, _label="Diagnosis")
+    # test_model(k=10, dataset="credit_approval", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64)
+    # test_model(k=10, dataset="rice", nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64)
+
+    # test with sklearn's digit dataset
+    digits = datasets.load_digits()
+    test_model(k=10, dataset=None, nn_layers=[4, 1], alpha=0.1, lambda_=0, epochs=50, batch_size=64, _X=digits.data, _y=digits.target)
 
     # --------------------------------------
 

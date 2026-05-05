@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import numpy as np
 
 class NeuralNetwork:
@@ -234,94 +234,94 @@ class NeuralNetwork:
                 )
             self.weights[i] = weight_matrices[i]
 
-    # def learning_curve(
-    #     self,
-    #     X_train: np.ndarray,
-    #     y_train: np.ndarray,
-    #     X_test: np.ndarray,
-    #     y_test: np.ndarray,
-    #     sample_sizes: Optional[List[int]] = None,
-    #     epochs: int = 500,
-    #     batch_size: int = None,
-    #     step: int = 5,
-    # ) -> dict:
-    #     '''
-    #     Train model with access to portions of the training data and evaluate on test set to generate a learning curve
-    #     '''
+    def learning_curve(
+        self,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_test: np.ndarray,
+        y_test: np.ndarray,
+        sample_sizes: Optional[List[int]] = None,
+        epochs: int = 500,
+        batch_size: int = None,
+        step: int = 5,
+    ) -> dict:
+        '''
+        Train model with access to portions of the training data and evaluate on test set to generate a learning curve
+        '''
 
-    #     if sample_sizes is None:
-    #         sample_sizes = list(range(step, len(X_train) + 1, step))
-    #         # include the full training set
-    #         if len(X_train) not in sample_sizes:
-    #             sample_sizes.append(len(X_train))
+        if sample_sizes is None:
+            sample_sizes = list(range(step, len(X_train) + 1, step))
+            # include the full training set
+            if len(X_train) not in sample_sizes:
+                sample_sizes.append(len(X_train))
  
-    #     # save the initial weights so we can reset before each run
-    #     initial_weights = [W.copy() for W in self.weights]
+        # save the initial weights so we can reset before each run
+        initial_weights = [W.copy() for W in self.weights]
  
-    #     test_losses = []
+        test_losses = []
  
-    #     for n in sample_sizes:
-    #         # reset weights to the same initialization for a fair comparison
-    #         self.weights = [W.copy() for W in initial_weights]
+        for n in sample_sizes:
+            # reset weights to the same initialization for a fair comparison
+            self.weights = [W.copy() for W in initial_weights]
  
-    #         X_sub = X_train[:n]
-    #         y_sub = y_train[:n]
+            X_sub = X_train[:n]
+            y_sub = y_train[:n]
  
-    #         # suppress per-epoch printing during learning curve generation
-    #         _orig_threshold = self.loss_threshold
-    #         self.loss_threshold = 1e-8
+            # suppress per-epoch printing during learning curve generation
+            _orig_threshold = self.loss_threshold
+            self.loss_threshold = 1e-8
  
-    #         # temporarily silence epoch prints
-    #         import sys, io
-    #         _stdout = sys.stdout
-    #         sys.stdout = io.StringIO()
-    #         try:
-    #             self.train(X_sub, y_sub, epochs=epochs, batch_size=batch_size)
-    #         finally:
-    #             sys.stdout = _stdout
-    #             self.loss_threshold = _orig_threshold
+            # temporarily silence epoch prints
+            import sys, io
+            _stdout = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                self.train(X_sub, y_sub, epochs=epochs, batch_size=batch_size)
+            finally:
+                sys.stdout = _stdout
+                self.loss_threshold = _orig_threshold
  
-    #         y_pred = self.predict(X_test)
-    #         loss = self.compute_loss(y_pred, y_test)
-    #         test_losses.append(loss)
-    #         print(f"  n={n:4d} | Test J: {loss:.6f}")
+            y_pred = self.predict(X_test)
+            loss = self.compute_loss(y_pred, y_test)
+            test_losses.append(loss)
+            print(f"  n={n:4d} | Test J: {loss:.6f}")
  
-    #     # restore original weights after the sweep
-    #     self.weights = [W.copy() for W in initial_weights]
+        # restore original weights after the sweep
+        self.weights = [W.copy() for W in initial_weights]
  
-    #     return {
-    #         "sample_sizes": sample_sizes,
-    #         "test_losses": test_losses,
-    #     }
+        return {
+            "sample_sizes": sample_sizes,
+            "test_losses": test_losses,
+        }
 
-    # def numeric_gradient_estimation(self, X: List[List[float]], y: List[List[float]], epsilon: float = 1e-5) -> List[np.ndarray]:
-    #     '''
-    #     Compute numerical gradient approximation for each weight matrix in the network.
-    #     This is used for testing the correctness of the backpropagation implementation.
-    #     '''
-    #     numerical_grads = []
+    def numeric_gradient_estimation(self, X: List[List[float]], y: List[List[float]], epsilon: float = 1e-5) -> List[np.ndarray]:
+        '''
+        Compute numerical gradient approximation for each weight matrix in the network.
+        This is used for testing the correctness of the backpropagation implementation.
+        '''
+        numerical_grads = []
  
-    #     for k in range(len(self.weights)):
-    #         grad_k = np.zeros_like(self.weights[k])
+        for k in range(len(self.weights)):
+            grad_k = np.zeros_like(self.weights[k])
  
-    #         for i in range(self.weights[k].shape[0]):
-    #             for j in range(self.weights[k].shape[1]):
-    #                 original_value = self.weights[k][i, j]
+            for i in range(self.weights[k].shape[0]):
+                for j in range(self.weights[k].shape[1]):
+                    original_value = self.weights[k][i, j]
  
-    #                 # Compute loss with positive perturbation
-    #                 self.weights[k][i, j] = original_value + epsilon
-    #                 loss_plus = self.compute_loss(self.predict(X), y)
+                    # Compute loss with positive perturbation
+                    self.weights[k][i, j] = original_value + epsilon
+                    loss_plus = self.compute_loss(self.predict(X), y)
  
-    #                 # Compute loss with negative perturbation
-    #                 self.weights[k][i, j] = original_value - epsilon
-    #                 loss_minus = self.compute_loss(self.predict(X), y)
+                    # Compute loss with negative perturbation
+                    self.weights[k][i, j] = original_value - epsilon
+                    loss_minus = self.compute_loss(self.predict(X), y)
  
-    #                 # Approximate gradient
-    #                 grad_k[i, j] = (loss_plus - loss_minus) / (2 * epsilon)
+                    # Approximate gradient
+                    grad_k[i, j] = (loss_plus - loss_minus) / (2 * epsilon)
  
-    #                 # Restore original weight value
-    #                 self.weights[k][i, j] = original_value
+                    # Restore original weight value
+                    self.weights[k][i, j] = original_value
  
-    #         numerical_grads.append(grad_k)
+            numerical_grads.append(grad_k)
  
-    #     return numerical_grads
+        return numerical_grads

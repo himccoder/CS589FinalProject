@@ -234,8 +234,22 @@ class NeuralNetwork:
 
             accuracy = np.mean(np.array(y_pred) == np.array(y_true))
 
+            num_classes = len(np.unique(y_true))
+
+            # f1 score over all classes
+            f1_scores = []
+            for i in range(num_classes):
+                tp = np.sum((y_pred == i) & (y_true == i))
+                fp = np.sum((y_pred == i) & (y_true != i))
+                fn = np.sum((y_pred != i) & (y_true == i))
+                precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+                recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+                f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+                f1_scores.append(f1)
+
             return {
                 "accuracy": accuracy,
+                "f1_score": np.mean(f1_scores)
             }
 
 
@@ -264,54 +278,80 @@ class NeuralNetwork:
         epochs: int = 500,
         batch_size: int = None,
         step: int = 5,
+        num_repeats: int = 5,
+        shuffle: bool = True,
+        random_state: Optional[int] = None,
     ) -> dict:
-        '''
-        Train model with access to portions of the training data and evaluate on test set to generate a learning curve
-        '''
 
+        rng = np.random.default_rng(random_state)
+
+        N = len(X_train)
+
+        # Define sample sizes
         if sample_sizes is None:
-            sample_sizes = list(range(step, len(X_train) + 1, step))
-            # include the full training set
-            if len(X_train) not in sample_sizes:
-                sample_sizes.append(len(X_train))
- 
-        # save the initial weights so we can reset before each run
+            sample_sizes = list(range(step, N + 1, step))
+            if sample_sizes[-1] != N:
+                sample_sizes.append(N)
+
+        # Optional shuffle
+        if shuffle:
+            perm = rng.permutation(N)
+            X_train = X_train[perm]
+            y_train = y_train[perm]
+
+        # Save initial weights
         initial_weights = [W.copy() for W in self.weights]
- 
-        test_losses = []
- 
+
+        test_loss_mean = []
+        test_loss_std = []
+
+        import sys, io
+
         for n in sample_sizes:
-            # reset weights to the same initialization for a fair comparison
-            self.weights = [W.copy() for W in initial_weights]
- 
-            X_sub = X_train[:n]
-            y_sub = y_train[:n]
- 
-            # suppress per-epoch printing during learning curve generation
-            _orig_threshold = self.loss_threshold
-            self.loss_threshold = 1e-8
- 
-            # temporarily silence epoch prints
-            import sys, io
-            _stdout = sys.stdout
-            sys.stdout = io.StringIO()
-            try:
-                self.train(X_sub, y_sub, epochs=epochs, batch_size=batch_size)
-            finally:
-                sys.stdout = _stdout
-                self.loss_threshold = _orig_threshold
- 
-            y_pred = self.predict(X_test)
-            loss = self.compute_loss(y_pred, y_test)
-            test_losses.append(loss)
-            print(f"  n={n:4d} | Test J: {loss:.6f}")
- 
-        # restore original weights after the sweep
+            losses_n = []
+
+            for _ in range(num_repeats):
+                # Sample w/o replacement
+                idx = rng.choice(N, size=n, replace=False)
+                X_sub = X_train[idx]
+                y_sub = y_train[idx]
+
+                # Reset weights
+                self.weights = [W.copy() for W in initial_weights]
+
+                # Silence training output
+                _orig_threshold = self.loss_threshold
+                self.loss_threshold = 1e-8
+                _stdout = sys.stdout
+                sys.stdout = io.StringIO()
+
+                try:
+                    self.train(X_sub, y_sub, epochs=epochs, batch_size=batch_size)
+                finally:
+                    sys.stdout = _stdout
+                    self.loss_threshold = _orig_threshold
+
+                # Evaluate
+                y_pred = self.predict(X_test)
+                loss = self.compute_loss(y_pred, y_test)
+                losses_n.append(loss)
+
+            # Aggregate statistics
+            mean_loss = np.mean(losses_n)
+            std_loss = np.std(losses_n)
+
+            test_loss_mean.append(mean_loss)
+            test_loss_std.append(std_loss)
+
+            print(f"n={n:4d} | Test Loss: {mean_loss:.4f} ± {std_loss:.4f}")
+
+        # Restore weights
         self.weights = [W.copy() for W in initial_weights]
- 
+
         return {
             "sample_sizes": sample_sizes,
-            "test_losses": test_losses,
+            "test_loss_mean": test_loss_mean,
+            "test_loss_std": test_loss_std,
         }
 
     def numeric_gradient_estimation(self, X: List[List[float]], y: List[List[float]], epsilon: float = 1e-5) -> List[np.ndarray]:

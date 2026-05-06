@@ -1,0 +1,202 @@
+Parkinsons
+
+Alpha = 0.01
+Max Iterations = 500
+Batch Size = 64
+
+[input_dim, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.7909
+    - avg F1: 0.8750
+reg = 0.1
+    - avg acc: 0.7537
+    - avg F1: 0.8532
+
+[input_dim, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.8095
+    - avg F1: 0.8830
+reg = 0.1
+    - avg acc: 0.7828
+    - avg F1: 0.8601
+
+[input_dim, 8, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.7742
+    - avg F1: 0.8702
+reg = 0.1
+    - avg acc: 0.7648
+    - avg F1: 0.8645
+    
+[input_dim, 16, 8, 8, output_dim], 
+reg = 0, 
+    - avg acc: 0.7642
+    - avg F1: 0.8645
+reg = 0.1
+    - avg acc: 0.7542
+    - avg F1: 0.8598
+
+--------------------
+
+Credit Approval
+
+Alpha = 0.1
+Max Iterations = 100
+Batch Size = 64
+
+[input_dim, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.8286
+    - avg F1: 0.8158
+reg = 0.1
+    - avg acc: 0.8409
+    - avg F1: 0.8287
+
+[input_dim, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.8543
+    - avg F1: 0.8310
+reg = 0.1
+    - avg acc: 0.8514
+    - avg F1: 0.8436
+
+[input_dim, 8, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.8353
+    - avg F1: 0.8165
+reg = 0.1
+    - avg acc: 0.7515
+    - avg F1: 0.8388
+    
+[input_dim, 16, 8, 8, output_dim], 
+reg = 0, 
+    - avg acc: 0.8466
+    - avg F1: 0.8308
+reg = 0.1
+    - avg acc: 0.8377
+    - avg F1: 0.8211
+
+--------------------
+
+Rice
+
+Alpha = 0.01
+Max Iterations = 50
+Batch Size = 64
+
+[input_dim, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.9228
+    - avg F1: 0.9324
+reg = 0.1
+    - avg acc: 0.9184
+    - avg F1: 0.9289
+
+[input_dim, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.9247
+    - avg F1: 0.9343
+reg = 0.1
+    - avg acc: 0.9247
+    - avg F1: 0.9343
+
+[input_dim, 8, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.9205
+    - avg F1: 0.9302
+reg = 0.1
+    - avg acc: 0.9186
+    - avg F1: 0.9296
+    
+[input_dim, 16, 8, 8, output_dim], 
+reg = 0, 
+    - avg acc: 0.9173
+    - avg F1: 0.9284
+reg = 0.1
+    - avg acc: 0.9129
+    - avg F1: 0.9253
+
+--------------------
+
+Digits
+
+Alpha = 0.1
+Max Iterations = 50
+Batch Size = 64
+
+note that f1 is f1 calculated for each class, then averaged
+
+[input_dim, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.9183
+    - avg F1: 0.9174
+reg = 0.1
+    - avg acc: 0.9237
+    - avg F1: 0.9228
+
+[input_dim, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.9854
+    - avg F1: 0.9854
+reg = 0.1
+    - avg acc: 0.9901
+    - avg F1: 0.9900
+
+[input_dim, 10, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.9872
+    - avg F1: 0.9872
+reg = 0.1
+    - avg acc: 0.9840 
+    - avg F1: 0.9839
+    
+[input_dim, 8, 10, 8 output_dim], 
+reg = 0, 
+    - avg acc: 0.9753
+    - avg F1: 0.9753
+reg = 0.1
+    - avg acc: 0.9743
+    - avg F1: 0.9743
+
+
+--------------------
+
+Cov type
+
+Alpha = 0.01
+Max Iterations = 3
+Batch Size = 64
+
+note that f1 is f1 calculated for each class, then averaged
+
+[input_dim, 4, output_dim], 
+reg = 0, 
+    - avg acc: 0.9183
+    - avg F1: 0.9174
+reg = 0.1
+    - avg acc: 0.9237
+    - avg F1: 0.9228
+
+[input_dim, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.9854
+    - avg F1: 0.9854
+reg = 0.1
+    - avg acc: 0.9901
+    - avg F1: 0.9900
+
+[input_dim, 10, 10, output_dim], 
+reg = 0, 
+    - avg acc: 0.9872
+    - avg F1: 0.9872
+reg = 0.1
+    - avg acc: 0.9840 
+    - avg F1: 0.9839
+    
+[input_dim, 8, 10, 8 output_dim], 
+reg = 0, 
+    - avg acc: 0.9753
+    - avg F1: 0.9753
+reg = 0.1
+    - avg acc: 0.9743
+    - avg F1: 0.9743

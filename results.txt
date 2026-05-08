@@ -161,7 +161,7 @@ reg = 0.1
 
 --------------------
 
-Cov type
+Cov type - Not actual data right now
 
 Alpha = 0.01
 Max Iterations = 3
@@ -171,32 +171,32 @@ note that f1 is f1 calculated for each class, then averaged
 
 [input_dim, 4, output_dim], 
 reg = 0, 
-    - avg acc: 0.9183
-    - avg F1: 0.9174
+    - avg acc: 0.7242
+    - avg F1: 0.4191
 reg = 0.1
-    - avg acc: 0.9237
-    - avg F1: 0.9228
+    - avg acc: 0.7251
+    - avg F1: 0.4110
 
 [input_dim, 10, output_dim], 
 reg = 0, 
-    - avg acc: 0.9854
-    - avg F1: 0.9854
+    - avg acc: 0.7702
+    - avg F1: 0.6126
 reg = 0.1
-    - avg acc: 0.9901
-    - avg F1: 0.9900
+    - avg acc: 
+    - avg F1: 
 
 [input_dim, 10, 10, output_dim], 
 reg = 0, 
-    - avg acc: 0.9872
-    - avg F1: 0.9872
+    - avg acc: 0.7860
+    - avg F1: 0.6451
 reg = 0.1
-    - avg acc: 0.9840 
-    - avg F1: 0.9839
+    - avg acc: 
+    - avg F1: 
     
 [input_dim, 8, 10, 8 output_dim], 
 reg = 0, 
-    - avg acc: 0.9753
-    - avg F1: 0.9753
+    - avg acc: 
+    - avg F1: 
 reg = 0.1
-    - avg acc: 0.9743
-    - avg F1: 0.9743
+    - avg acc: 
+    - avg F1: 

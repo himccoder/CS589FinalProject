@@ -163,7 +163,7 @@ def plot_learning_curves(
     plt.ylabel("Loss")
     plt.title(f"{dataset.capitalize()} Learning Curve\nLayers: {nn_layers}, Alpha: {alpha}, Lambda: {lambda_}")
     plt.legend()
-    plt.savefig(f"./graphs/{dataset}_learning_curve.png")
+    # plt.savefig(f"./graphs/{dataset}_learning_curve.png")
     plt.show()
     plt.close()
 
@@ -171,11 +171,11 @@ if __name__ == "__main__":
 
     # --------------------------------------
 
-    # Test different network architectures and regularization parameters 
+    # Test different network architectures and regularization parameters
 
     # test a specific model on a specified dataset, only need to provide name of the dataset
     # don't need to provide input dimension in the nn_layers argument, it will be automatically prepended based on the dataset used
-    
+
 
     # Network Architectures
     # [input_dim, 4, output_dim], reg = 0, reg = 0.1
@@ -184,11 +184,11 @@ if __name__ == "__main__":
     # [input_dim, 16, 8, 8, output_dim], reg = 0, reg = 0.1
 
 
-    # # test on the parkinsons dataset
+    # # # test on the parkinsons dataset
     # test_model(
-    #     k=10, 
-    #     dataset="parkinsons", 
-    #     nn_layers=[16, 8, 8, 1], 
+    #     k=10,
+    #     dataset="parkinsons",
+    #     nn_layers=[16, 8, 8, 1],
     #     alpha=0.01,
     #     lambda_=0.1,
     #     epochs=500,
@@ -197,12 +197,12 @@ if __name__ == "__main__":
     #     batch_size=64,
     #     _label="Diagnosis"
     #     )
-    
+
     # # test on the credit approval dataset
     # test_model(
-    #     k=10, 
-    #     dataset="credit_approval", 
-    #     nn_layers=[16, 16, 8, 1], 
+    #     k=10,
+    #     dataset="credit_approval",
+    #     nn_layers=[16, 16, 8, 1],
     #     alpha=0.1,
     #     lambda_=0.1,
     #     epochs=100,
@@ -213,9 +213,9 @@ if __name__ == "__main__":
 
     # # test on the rice dataset
     # test_model(
-    #     k=10, 
-    #     dataset="rice", 
-    #     nn_layers=[16, 8, 8, 1], 
+    #     k=10,
+    #     dataset="rice",
+    #     nn_layers=[16, 8, 8, 1],
     #     alpha=0.01,
     #     lambda_=0.1,
     #     epochs=50,
@@ -230,16 +230,16 @@ if __name__ == "__main__":
     # # one hot encode the target variable
     # y_one_hot = np.eye(10)[digits[1]]
     # test_model(
-    #     k=10, 
-    #     dataset=None, 
-    #     nn_layers=[8, 10, 8, 10], 
-    #     alpha=0.1, 
-    #     lambda_=0, 
+    #     k=10,
+    #     dataset=None,
+    #     nn_layers=[8, 10, 8, 10],
+    #     alpha=0.1,
+    #     lambda_=0,
     #     epochs=50,
-    #     binary = False, 
-    #     label_encoding=False, 
-    #     batch_size=64, 
-    #     _X=digits[0], 
+    #     binary = False,
+    #     label_encoding=False,
+    #     batch_size=64,
+    #     _X=digits[0],
     #     _y=y_one_hot)
 
     # # # test with sklearn's cover type dataset
@@ -247,27 +247,27 @@ if __name__ == "__main__":
     # # # one hot encode the target variable
     # y_one_hot = np.eye(7)[cov_type[1] - 1] # shift classes from 1-7 to 0-6
     # test_model(
-    #     k=10, 
-    #     dataset=None, 
-    #     nn_layers=[4, 7], 
-    #     alpha=0.1, 
-    #     lambda_=0, 
-    #     epochs=3,
-    #     binary = False, 
-    #     label_encoding=False, 
-    #     batch_size=64, 
-    #     _X=cov_type[0], 
-    #     _y=y_one_hot)
+    #   k=10,
+    #   dataset=None,
+    #   nn_layers=[4, 7],
+    #   alpha=0.1,
+    #   lambda_=0.1,
+    #   epochs=50,
+    #   binary = False,
+    #   label_encoding=False,
+    #   batch_size=64,
+    #   _X=cov_type[0],
+    #   _y=y_one_hot)
 
     # --------------------------------------
 
     # # Plot learning curves for a specific model
     # plot_learning_curves(
-    #     k=2, 
+    #     k=10,
     #     dataset="parkinsons",
-    #     nn_layers=[10, 1], 
+    #     nn_layers=[10, 1],
     #     alpha=0.01,
-    #     lambda_=0.1,
+    #     lambda_=0,
     #     binary=True,
     #     label_encoding=False,
     #     epochs=300,
@@ -276,9 +276,9 @@ if __name__ == "__main__":
     # )
 
     # plot_learning_curves(
-    #     k=10, 
+    #     k=10,
     #     dataset="credit_approval",
-    #     nn_layers=[10, 1], 
+    #     nn_layers=[10, 1],
     #     alpha=0.1,
     #     lambda_=0.1,
     #     binary=True,
@@ -288,15 +288,34 @@ if __name__ == "__main__":
     # )
 
     # plot_learning_curves(
-    #     k=10, 
+    #     k=10,
     #     dataset="rice",
-    #     nn_layers=[10, 1], 
+    #     nn_layers=[10, 1],
     #     alpha=0.01,
     #     lambda_=0,
     #     binary=True,
     #     label_encoding=True,
     #     epochs=50,
     #     batch_size=64
+    # )
+
+    # digits = datasets.load_digits(return_X_y=True)
+    # # one hot encode the target variable
+    # y_one_hot = np.eye(10)[digits[1]]
+
+    # print(len(digits[0]))
+    # plot_learning_curves(
+    #     k=10,
+    #     dataset="Digits",
+    #     nn_layers=[10, 10],
+    #     alpha=0.1,
+    #     lambda_=0.1,
+    #     binary=False,
+    #     label_encoding=False,
+    #     epochs=50,
+    #     batch_size=64,
+    #     _X = digits[0],
+    #     _y = y_one_hot,
     # )
 
     pass

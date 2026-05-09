@@ -79,14 +79,25 @@ class k_fold:
                     np.random.shuffle(fold_idx)
                     self.folds.append(fold_idx)
             else:
-                # y should come in one-hot encoded format
-                classes = np.unique(y)
+                # y comes in one-hot encoded — convert to class indices for stratification
+                if y.ndim == 2:
+                    y_classes = np.argmax(y, axis=1)
+                else:
+                    y_classes = y
+
+                classes = np.unique(y_classes)
                 class_folds = []
                 for c in classes:
-                    c_idx = np.where(y == c)[0]
+                    c_idx = np.where(y_classes == c)[0]  # row indices now
                     np.random.shuffle(c_idx)
                     c_folds = np.array_split(c_idx, self.k)
                     class_folds.append(c_folds)
+
+                self.folds = []
+                for i in range(self.k):
+                    fold_idx = np.concatenate([class_folds[j][i] for j in range(len(classes))])
+                    np.random.shuffle(fold_idx)
+                    self.folds.append(fold_idx)
 
                 self.folds = []
                 for i in range(self.k):

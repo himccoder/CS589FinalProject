@@ -1,0 +1,11 @@
+The code is ran mainly in the nn_main.py file, with neural_net.py, and k_fold.py acting as supporting files.
+
+There are two main functions to run the neural network code,
+
+The test_model will test the specified architecture, lambda, etc parameters on the input data set
+using stratified k fold, with a specified number of folds. It will at the end, print the average
+accuracy and f1 score. See the nn_main.py function for examples of how to call the function.
+
+The plot_learning_curves function will train the model on 5 instances, 10 instances, etc, using k fold
+with the specified specified architecture, lambda, etc parameters with the specified data set.
+The function will generate a plot once all computation is done.

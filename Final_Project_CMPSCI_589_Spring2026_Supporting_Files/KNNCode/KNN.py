@@ -11,11 +11,24 @@ from sklearn import datasets
 def runTrial(trainData, testData, OnTestData, k):
     columnCnt = len(trainData[0])
 
+    columnCnt = len(trainData[0])
+
+    X_train = np.array(trainData[:, :-1], dtype=float)
+    y_train = trainData[:, -1]
+
+    X_test = np.array(testData[:, :-1], dtype=float)
+    y_test = testData[:, -1]
+
     normalizer = MinMaxScaler()
 
-    normalizer.fit(trainData)
-    trainScaled = normalizer.transform(trainData)
-    testScaled = normalizer.transform(testData)
+    normalizer.fit(X_train)
+
+    X_train_scaled = normalizer.transform(X_train)
+    X_test_scaled = normalizer.transform(X_test)
+
+    # Reattach labels
+    trainScaled = np.hstack((X_train_scaled, y_train.reshape(-1, 1)))
+    testScaled = np.hstack((X_test_scaled, y_test.reshape(-1, 1)))
 
     def euclidDistance(instance1, instance2):
         sum = 0
@@ -97,7 +110,7 @@ def plotKToAccuracy(dataset):
 
     pyplot.errorbar(range(1, 52, 2), means, deviations, capsize=0.5)
 
-    pyplot.title("KNN Algorithm accuracy over k on Digits Dataset")
+    pyplot.title("KNN Algorithm accuracy over k on Credit Approval Dataset")
 
     pyplot.xlabel("Value of k")
     pyplot.ylabel("Accuracy over testing data")
@@ -142,7 +155,7 @@ def evaluateK(dataset, k):
             if foldIdx != testIdx:
                 trainingSet.extend(folds[foldIdx])
 
-        accuracy, F1 = runTrial(trainingSet, testSet, False, KNN_k)
+        accuracy, F1 = runTrial(trainingSet, testSet, True, KNN_k)
         sumAccuracy += accuracy
         sumF1 += F1
 
@@ -154,15 +167,15 @@ def evaluateK(dataset, k):
     print(f"Accuracy: {stratifiedAccuracy}\nF1: {stratifiedF1}\n")
 
 
-'''#Preprocessing
-dataset = pd.read_csv("../datasets/parkinsons.csv", header=0)
+#Preprocessing
+dataset = pd.read_csv("../datasets/credit_approval.csv", header=0)
 dataset = shuffle(dataset)
 
 X = dataset.iloc[:, :-1]
 y = dataset.iloc[:, -1].to_numpy()
 
 #Use [0, 3, 4, 5, 6, 8, 9, 10, 11, 12] for credit_approval
-categorical_cols = []
+categorical_cols = [0, 3, 4, 5, 6, 8, 9, 10, 11, 12]
 
 encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
 
@@ -176,16 +189,16 @@ if len(categorical_cols) > 0:
 else:
     X = X.to_numpy()
 
-dataset_encoded = np.hstack((X, y.reshape(-1, 1)))'''
+dataset_encoded = np.hstack((X, y.reshape(-1, 1)))
 
-#If using the numbers dataset
+'''#If using the numbers dataset
 digits = datasets.load_digits(return_X_y=True)
 
 digits_dataset_X = digits[0]
 digits_dataset_y = digits[1]
 
 merged_dataset = np.hstack((digits_dataset_X, digits_dataset_y.reshape(-1, 1)))
-dataset_encoded = shuffle(merged_dataset)
+dataset_encoded = shuffle(merged_dataset)'''
 
 
 plotKToAccuracy(dataset_encoded)

@@ -3,10 +3,13 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot
 from sklearn.utils import shuffle
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn import datasets
+import ssl
+import certifi
 
+ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 def runTrial(trainData, testData, OnTestData, k):
     columnCnt = len(trainData[0])
@@ -110,7 +113,7 @@ def plotKToAccuracy(dataset):
 
     pyplot.errorbar(range(1, 52, 2), means, deviations, capsize=0.5)
 
-    pyplot.title("KNN Algorithm accuracy over k on Credit Approval Dataset")
+    pyplot.title("KNN Algorithm accuracy over k on Cover Type Dataset")
 
     pyplot.xlabel("Value of k")
     pyplot.ylabel("Accuracy over testing data")
@@ -155,6 +158,9 @@ def evaluateK(dataset, k):
             if foldIdx != testIdx:
                 trainingSet.extend(folds[foldIdx])
 
+        trainingSet = np.array(trainingSet)
+        testSet = np.array(testSet)
+
         accuracy, F1 = runTrial(trainingSet, testSet, True, KNN_k)
         sumAccuracy += accuracy
         sumF1 += F1
@@ -168,14 +174,14 @@ def evaluateK(dataset, k):
 
 
 #Preprocessing
-dataset = pd.read_csv("../datasets/credit_approval.csv", header=0)
+dataset = pd.read_csv("../datasets/rice.csv", header=0)
 dataset = shuffle(dataset)
 
 X = dataset.iloc[:, :-1]
 y = dataset.iloc[:, -1].to_numpy()
 
 #Use [0, 3, 4, 5, 6, 8, 9, 10, 11, 12] for credit_approval
-categorical_cols = [0, 3, 4, 5, 6, 8, 9, 10, 11, 12]
+categorical_cols = []
 
 encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
 
@@ -191,16 +197,33 @@ else:
 
 dataset_encoded = np.hstack((X, y.reshape(-1, 1)))
 
-'''#If using the numbers dataset
+"""#If using the numbers dataset
 digits = datasets.load_digits(return_X_y=True)
 
 digits_dataset_X = digits[0]
 digits_dataset_y = digits[1]
 
 merged_dataset = np.hstack((digits_dataset_X, digits_dataset_y.reshape(-1, 1)))
-dataset_encoded = shuffle(merged_dataset)'''
+dataset_encoded = shuffle(merged_dataset)"""
 
+'''X, y = datasets.fetch_covtype(return_X_y=True)
+
+sss = StratifiedShuffleSplit(n_splits=1, train_size=4998, random_state=42)
+
+for train_idx, _ in sss.split(X, y):
+    X_sample = X[train_idx]
+    y_sample = y[train_idx]
+
+dataset_encoded = shuffle(
+    np.hstack((X_sample, y_sample.reshape(-1, 1)))
+)'''
 
 plotKToAccuracy(dataset_encoded)
 
-#evaluateK(dataset_encoded, 5)
+evaluateK(dataset_encoded, 1)
+evaluateK(dataset_encoded, 5)
+evaluateK(dataset_encoded, 10)
+evaluateK(dataset_encoded, 15)
+evaluateK(dataset_encoded, 25)
+evaluateK(dataset_encoded, 50)
+

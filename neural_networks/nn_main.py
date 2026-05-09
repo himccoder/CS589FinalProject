@@ -1,9 +1,9 @@
 from encodings.punycode import digits
 from typing import List
 import matplotlib.pyplot as plt
-from neural_net import NeuralNetwork
+from neural_networks.neural_net import NeuralNetwork
 import numpy as np
-import k_fold
+import neural_networks.k_fold as k_fold
 from sklearn import datasets
 
 def test_model(
